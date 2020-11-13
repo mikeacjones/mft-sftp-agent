@@ -1,6 +1,6 @@
 # Managed File Transfer - SFTP Agent
 
-This agent is paired with this project: https://github.com/mikeacjones/mft-sftp-config-sapi
+This agent is paired with this project: https://github.com/mikeacjones/mft-config-sapi
 
 The role of the agent is to process incoming/outgoing SFTP files configured using the system API above.
 
