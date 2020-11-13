@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:accounts-api="http://www.mulesoft.org/schema/mule/accounts-api" xmlns:s3="http://www.mulesoft.org/schema/mule/s3"
+	xmlns:transform-system-api="http://www.mulesoft.org/schema/mule/transform-system-api"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:mft-sftp-config-sapi="http://www.mulesoft.org/schema/mule/mft-sftp-config-sapi" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/mft-sftp-config-sapi http://www.mulesoft.org/schema/mule/mft-sftp-config-sapi/current/mule-mft-sftp-config-sapi.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/transform-system-api http://www.mulesoft.org/schema/mule/transform-system-api/current/mule-transform-system-api.xsd
+http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
+http://www.mulesoft.org/schema/mule/accounts-api http://www.mulesoft.org/schema/mule/accounts-api/current/mule-accounts-api.xsd">
+	<flow name="mft-sftp-agentFlow" doc:id="93e81d74-0190-4708-9827-e661ea0c7e13" maxConcurrency="1">
+		<scheduler doc:name="Scheduler" doc:id="42c7fc1f-edf7-4259-b0fd-da64971e620d" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="2" timeUnit="SECONDS" startDelay="30"/>
+			</scheduling-strategy>
+		</scheduler>
+		<mft-sftp-config-sapi:get-configs doc:name="Get configs" doc:id="71b4aa01-a25f-4fbc-b2a3-ecad6842f74a" config-ref="MFT___SFTP_Config_SAPI_Config" client-id="TEST" client-secret="TEST"/>
+		<foreach doc:name="For Each" doc:id="6478b9a0-4721-4295-960c-1656dc48c67a" >
+			<set-variable value="#[output application/json
+---
+payload]" doc:name="Set Variable" doc:id="61e0e7e8-fb05-47b3-b8f3-602a87eb26fb" variableName="currentConfig"/>
+			<try doc:name="Try" doc:id="7cdb9798-d850-451e-9365-58298ca4b9e0" >
+				<sftp:list doc:name="List" doc:id="45b0cae8-1934-448e-b2f1-477c03b83f29" config-ref="SFTP_Config" directoryPath='#[(payload.inbound.filePattern splitBy "/")[0 to -2] joinBy "/"]'>
+				<sftp:matcher filenamePattern='#[(payload.inbound.filePattern splitBy "/")[-1]]' />
+			</sftp:list>
+				<foreach doc:name="For Each" doc:id="21d7ab34-31d9-4047-bfee-192e4f5c9309">
+				<file:write doc:id="7081f00b-2fc3-4fad-a1c0-77628ae6e9ac" path='#[vars.currentConfig.inbound.localDestination ++ "/" ++ attributes.fileName]' />
+				<sftp:delete doc:name="Delete" doc:id="914af50e-c174-481a-bc14-c85c0318f457" config-ref="SFTP_Config" path="#[attributes.path]" />
+			</foreach>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="26f2bf97-6c2e-4452-89b5-6cb975066b2f" />
+				</error-handler>
+			</try>
+			<try doc:name="Try" doc:id="e7621adf-d580-41cd-a35d-1e685322122d" >
+				<file:list doc:name="List" doc:id="2f90bc83-269f-420b-86eb-df40bb91bdd1" directoryPath='#[(vars.currentConfig.outbound.filePattern splitBy "/")[0 to -2] joinBy "/"]'>
+				<file:matcher filenamePattern='#[(vars.currentConfig.outbound.filePattern splitBy "/")[-1]]' />
+			</file:list>
+				<foreach doc:name="For Each" doc:id="ca56551d-9504-4da8-9e99-b3504dc06be8">
+				<sftp:write doc:name="Write" doc:id="6ef8853b-f4d0-4888-bef9-3d10649a7e4e" config-ref="SFTP_Config" path='#[vars.currentConfig.outbound.remoteDestination ++ "/" ++ attributes.fileName]' />
+				<file:move doc:name="Move" doc:id="84d68a61-1fe3-4aae-8563-56f22fd392c7" sourcePath="#[attributes.path]" targetPath="#[vars.currentConfig.outbound.archive]" overwrite="true" />
+			</foreach>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="cea4be1a-8487-4df0-93be-5abd4542214e" />
+				</error-handler>
+			</try>
+		</foreach>
+	</flow>
+</mule>

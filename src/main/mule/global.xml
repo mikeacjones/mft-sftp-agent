@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:mft-sftp-config-sapi="http://www.mulesoft.org/schema/mule/mft-sftp-config-sapi"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/mft-sftp-config-sapi http://www.mulesoft.org/schema/mule/mft-sftp-config-sapi/current/mule-mft-sftp-config-sapi.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+	<mft-sftp-config-sapi:config name="MFT___SFTP_Config_SAPI_Config" doc:name="MFT - SFTP Config SAPI Config" doc:id="9e33c1c2-bcd8-45d0-b948-6e01dfaed5c0" property_host="localhost" property_port="8081" property_protocol="HTTP" property_basePath="/api/" />
+	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="7022b407-49a9-40cd-9f9c-cc4c9cf2ef9c" >
+		<sftp:connection host="eksprod.tools.mulesoft.com"/>
+	</sftp:config>
+</mule>
